@@ -1,7 +1,7 @@
-//          Copyright John W. Wilkinson 2007 - 2009.
+//          Copyright John W. Wilkinson 2007 - 2011
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.03
+// json spirit version 4.04
 
 // This demo shows you how to read and write JSON objects and arrays 
 // using header files only, i.e. not linking to the JSON Spirit object library.
@@ -97,7 +97,7 @@ void write_addrs( const char* file_name, const Address addrs[] )
 
     ofstream os( file_name );
 
-    write_stream( Value( addr_array ), os, true );  // NB need to convert Array to a Value
+    write_stream( Value( addr_array ), os, pretty_print );  // NB need to convert Array to a Value
 
     os.close();
 }

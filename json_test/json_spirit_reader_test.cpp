@@ -1,7 +1,7 @@
-//          Copyright John W. Wilkinson 2007 - 2009.
+//          Copyright John W. Wilkinson 2007 - 2011
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.03
+// json spirit version 4.04
 
 #include "json_spirit_reader_test.h"
 #include "utils_test.h"
@@ -317,16 +317,6 @@ namespace
                             "    \"name_4\" : -567\n"
                             "}" );
 
-            check_reading( "{\n"
-                            "    \"name 1\" : \"value 1\",\n"
-                            "    \"name 2\" : 1.200000000000000,\n"
-                            "    \"name 3\" : \"value 3\",\n"
-                            "    \"name_4\" : 1.234567890123456e+125,\n"
-                            "    \"name_5\" : -1.234000000000000e-123,\n"
-                            "    \"name_6\" : 1.000000000000000e-123,\n"
-                            "    \"name_7\" : 1234567890.123456\n"
-                            "}" );
-
             check_reading( "[\n]" );
 
             check_reading( "[\n"
@@ -335,7 +325,7 @@ namespace
 
             check_reading( "[\n"
                            "    1,\n"
-                           "    1.200000000000000,\n"
+                           "    1.2000000000000000,\n"
                            "    \"john]\",\n"
                            "    true,\n"
                            "    false,\n"
@@ -426,6 +416,31 @@ namespace
 
             check_reading( INT_MIN, INT_MAX );
             check_reading( LLONG_MIN, LLONG_MAX );
+        }
+
+        void test_reading_reals()
+        {
+            Value_type value;
+
+            const String_type in_s = to_str( "[1.200000000000000,1.234567890123456e+125,-1.234000000000000e-123,"
+                                             " 1.000000000000000e-123,1234567890.123456,123]" );
+
+            basic_istringstream< Char_type > is( in_s );
+
+            const bool ok = read( is, value );
+
+            assert_eq( ok, true );
+            assert_eq( value.type(), array_type );
+
+            const Array_type arr = value.get_array();
+
+            assert_eq( arr.size(), 6 );
+            assert_eq( arr[0].get_real(), 1.200000000000000, 1e-16 );
+            assert_eq( arr[1].get_real(), 1.234567890123456e+125, 1e+110 );
+            assert_eq( arr[2].get_real(), -1.234000000000000e-123, 1e+108 );
+            assert_eq( arr[3].get_real(), 1.000000000000000e-123, 1e+108 );
+            assert_eq( arr[4].get_real(), 1234567890.123456, 1e-7 );
+            assert_eq( arr[5].get_real(), 123.0, 1e-13 );
         }
 
         void test_from_stream( const char* json_str, bool expected_success,
@@ -755,11 +770,12 @@ namespace
             assert_eq( a[4].get_real(), 12.3 );
             assert_eq( a[5].is_null(), true );
         }
-
+        
         void run_tests()
         {
             test_syntax();
             test_reading();
+            test_reading_reals();
             test_from_stream();
             test_escape_chars();
             test_values();

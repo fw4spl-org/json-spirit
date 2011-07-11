@@ -4,7 +4,8 @@ json_spirit_stream_reader_test.cpp
 json_spirit_utils_test.cpp
 json_spirit_value_test.cpp
 json_spirit_writer_test.cpp
-json_test.cpp)
+json_test.cpp
+utils_test.cpp)
 
 FIND_PACKAGE(Boost 1.34 REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})

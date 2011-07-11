@@ -208,6 +208,10 @@
 				RelativePath=".\json_test.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\utils_test.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
