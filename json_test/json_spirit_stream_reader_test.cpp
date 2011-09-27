@@ -1,7 +1,7 @@
 //          Copyright John W. Wilkinson 2007 - 2011
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.04
+// json spirit version 4.05
 
 #include "json_spirit_stream_reader_test.h"
 #include "utils_test.h"
@@ -121,11 +121,17 @@ namespace
 
 void json_spirit::test_stream_reader()
 {
+#ifdef JSON_SPIRIT_VALUE_ENABLED
     Test_runner< Config  >().run_tests();
+#endif
+#ifdef JSON_SPIRIT_MVALUE_ENABLED
     Test_runner< mConfig >().run_tests();
+#endif
 
-#ifndef BOOST_NO_STD_WSTRING
+#if defined( JSON_SPIRIT_WVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     Test_runner< wConfig  >().run_tests();
+#endif
+#if defined( JSON_SPIRIT_WMVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     Test_runner< wmConfig >().run_tests();
 #endif
 }

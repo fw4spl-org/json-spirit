@@ -1,7 +1,7 @@
 //          Copyright John W. Wilkinson 2007 - 2011
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.04
+// json spirit version 4.05
 
 #include "json_spirit_reader_test.h"
 #include "utils_test.h"
@@ -786,7 +786,7 @@ namespace
         }
     };
 
-#ifndef BOOST_NO_STD_WSTRING
+#if defined( JSON_SPIRIT_WVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     void test_wide_esc_u()
     {
         wValue value;
@@ -800,6 +800,7 @@ namespace
     }
 #endif
 
+#ifdef JSON_SPIRIT_VALUE_ENABLED
     void test_extended_ascii( const string& s )
     {
         Value value;
@@ -814,22 +815,28 @@ namespace
         test_extended_ascii( "\\u00E4\\u00F6\\u00FC\\u00DF" );
         test_extended_ascii( "äöüß" );
     }
+#endif
 }
 
 //#include <fstream>
 
 void json_spirit::test_reader()
 {
+#ifdef JSON_SPIRIT_VALUE_ENABLED
     Test_runner< Config  >().run_tests();
+    test_extended_ascii();
+#endif
+#ifdef JSON_SPIRIT_MVALUE_ENABLED
     Test_runner< mConfig >().run_tests();
-
-#ifndef BOOST_NO_STD_WSTRING
+#endif
+#if defined( JSON_SPIRIT_WVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     Test_runner< wConfig  >().run_tests();
-    Test_runner< wmConfig >().run_tests();
     test_wide_esc_u();
 #endif
+#if defined( JSON_SPIRIT_WMVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
+    Test_runner< wmConfig >().run_tests();
+#endif
 
-    test_extended_ascii();
 
 #ifndef _DEBUG
     //ifstream ifs( "test.txt" );

@@ -4,7 +4,7 @@
 //          Copyright John W. Wilkinson 2007 - 2011
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.04
+// json spirit version 4.05
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 # pragma once
@@ -21,12 +21,18 @@
 #include <boost/shared_ptr.hpp> 
 #include <boost/variant.hpp> 
 
+// comment out the value types you don't need to reduce build times and intermediate file sizes
+#define JSON_SPIRIT_VALUE_ENABLED
+#define JSON_SPIRIT_WVALUE_ENABLED
+#define JSON_SPIRIT_MVALUE_ENABLED
+#define JSON_SPIRIT_WMVALUE_ENABLED
+
 namespace json_spirit
 {
     enum Value_type{ obj_type, array_type, str_type, bool_type, int_type, real_type, null_type };
 
     struct Null{};
-
+    
     template< class Config >    // Config determines whether the value uses std::string or std::wstring and
                                 // whether JSON Objects are represented as vectors or maps
     class Value_impl
@@ -49,6 +55,12 @@ namespace json_spirit
         Value_impl( boost::int64_t     value );
         Value_impl( boost::uint64_t    value );
         Value_impl( double             value );
+
+        template< class Iter >
+        Value_impl( Iter first, Iter last );    // constructor from containers, e.g. std::vector or std::list
+
+        template< BOOST_VARIANT_ENUM_PARAMS( typename T ) >
+        Value_impl( const boost::variant< BOOST_VARIANT_ENUM_PARAMS(T) >& variant ); // constructor for compatible variant types
 
         Value_impl( const Value_impl& other );
 
@@ -86,6 +98,28 @@ namespace json_spirit
                                 String_type, bool, boost::int64_t, double, Null, boost::uint64_t > Variant;
 
         Variant v_;
+
+        class Variant_converter_visitor : public boost::static_visitor< Variant > 
+        {
+        public:
+         
+              template< typename T, typename A, template< typename, typename > class Cont >
+              Variant operator()( const Cont< T, A >& cont ) const 
+              {
+                  return Array( cont.begin(), cont.end() );
+              }
+             
+              Variant operator()( int i ) const 
+              {
+                  return static_cast< boost::int64_t >( i );
+              }
+           
+              template<class T>
+              Variant operator()( const T& t ) const 
+              {
+                  return t;
+              }
+        };
     };
 
     // vector objects
@@ -108,6 +142,7 @@ namespace json_spirit
         Value_type value_;
     };
 
+#if defined( JSON_SPIRIT_VALUE_ENABLED ) || defined( JSON_SPIRIT_WVALUE_ENABLED )
     template< class String >
     struct Config_vector
     {
@@ -134,20 +169,22 @@ namespace json_spirit
             return pair.value_;
         }
     };
+#endif
 
     // typedefs for ASCII
 
+#ifdef JSON_SPIRIT_VALUE_ENABLED
     typedef Config_vector< std::string > Config;
 
     typedef Config::Value_type  Value;
     typedef Config::Pair_type   Pair;
     typedef Config::Object_type Object;
     typedef Config::Array_type  Array;
+#endif
 
     // typedefs for Unicode
 
-#ifndef BOOST_NO_STD_WSTRING
-
+#if defined( JSON_SPIRIT_WVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     typedef Config_vector< std::wstring > wConfig;
 
     typedef wConfig::Value_type  wValue;
@@ -158,6 +195,7 @@ namespace json_spirit
 
     // map objects
 
+#if defined( JSON_SPIRIT_MVALUE_ENABLED ) || defined( JSON_SPIRIT_WMVALUE_ENABLED )
     template< class String >
     struct Config_map
     {
@@ -182,25 +220,26 @@ namespace json_spirit
             return pair.second;
         }
     };
+#endif
 
     // typedefs for ASCII
 
+#ifdef JSON_SPIRIT_MVALUE_ENABLED
     typedef Config_map< std::string > mConfig;
 
     typedef mConfig::Value_type  mValue;
     typedef mConfig::Object_type mObject;
     typedef mConfig::Array_type  mArray;
+#endif
 
     // typedefs for Unicode
 
-#ifndef BOOST_NO_STD_WSTRING
-
+#if defined( JSON_SPIRIT_WMVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     typedef Config_map< std::wstring > wmConfig;
 
     typedef wmConfig::Value_type  wmValue;
     typedef wmConfig::Object_type wmObject;
     typedef wmConfig::Array_type  wmArray;
-
 #endif
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -278,6 +317,20 @@ namespace json_spirit
     template< class Config >
     Value_impl< Config >::Value_impl( const Value_impl< Config >& other )
     :   v_( other.v_ )
+    {
+    }
+
+    template< class Config >
+    template< class Iter >
+    Value_impl< Config >::Value_impl( Iter first, Iter last )
+    :   v_( Array( first, last ) )
+    {
+    }
+
+    template< class Config >
+    template< BOOST_VARIANT_ENUM_PARAMS( typename T ) >
+    Value_impl< Config >::Value_impl( const boost::variant< BOOST_VARIANT_ENUM_PARAMS(T) >& variant )
+    :   v_( boost::apply_visitor( Variant_converter_visitor(), variant) )
     {
     }
 

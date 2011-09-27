@@ -1,7 +1,7 @@
 //          Copyright John W. Wilkinson 2007 - 2011
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.04
+// json spirit version 4.05
 
 // This demo shows you how to read and write JSON objects and arrays 
 // using header files only, i.e. not linking to the JSON Spirit object library.
@@ -11,6 +11,10 @@
 #include "json_spirit_writer_template.h"
 #include <cassert>
 #include <fstream>
+
+#ifndef JSON_SPIRIT_VALUE_ENABLED
+#error Please define JSON_SPIRIT_VALUE_ENABLED for the Value type to be enabled 
+#endif
 
 using namespace std;
 using namespace json_spirit;
