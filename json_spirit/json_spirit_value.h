@@ -1,10 +1,10 @@
 #ifndef JSON_SPIRIT_VALUE
 #define JSON_SPIRIT_VALUE
 
-//          Copyright John W. Wilkinson 2007 - 2011
+//          Copyright John W. Wilkinson 2007 - 2014
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.05
+// json spirit version 4.08
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 # pragma once
@@ -30,6 +30,8 @@
 namespace json_spirit
 {
     enum Value_type{ obj_type, array_type, str_type, bool_type, int_type, real_type, null_type };
+
+    static std::string value_type_to_string( Value_type vtype );
 
     struct Null{};
     
@@ -159,12 +161,12 @@ namespace json_spirit
             return obj.back().value_;
         }
                 
-        static String_type get_name( const Pair_type& pair )
+        static const String_type& get_name( const Pair_type& pair )
         {
             return pair.name_;
         }
                 
-        static Value_type get_value( const Pair_type& pair )
+        static const Value_type& get_value( const Pair_type& pair )
         {
             return pair.value_;
         }
@@ -203,19 +205,19 @@ namespace json_spirit
         typedef Value_impl< Config_map > Value_type;
         typedef std::vector< Value_type > Array_type;
         typedef std::map< String_type, Value_type > Object_type;
-        typedef std::pair< String_type, Value_type > Pair_type;
+        typedef std::pair< const String_type, Value_type > Pair_type;
 
         static Value_type& add( Object_type& obj, const String_type& name, const Value_type& value )
         {
             return obj[ name ] = value;
         }
                 
-        static String_type get_name( const Pair_type& pair )
+        static const String_type& get_name( const Pair_type& pair )
         {
             return pair.first;
         }
                 
-        static Value_type get_value( const Pair_type& pair )
+        static const Value_type& get_value( const Pair_type& pair )
         {
             return pair.second;
         }
@@ -384,7 +386,7 @@ namespace json_spirit
         {
             std::ostringstream os;
 
-            os << "value type is " << type() << " not " << vtype;
+            os << "get_value< " << value_type_to_string( vtype ) << " > called on " << value_type_to_string( type() ) << " Value";
 
             throw std::runtime_error( os.str() );
         }
@@ -579,6 +581,24 @@ namespace json_spirit
     T Value_impl< Config >::get_value() const
     {
         return internal_::get_value( *this, internal_::Type_to_type< T >() );
+    }
+
+    static std::string value_type_to_string( const Value_type vtype )
+    {
+        switch( vtype )
+        {
+            case obj_type: return "Object";
+            case array_type: return "Array";
+            case str_type: return "string";
+            case bool_type: return "boolean";
+            case int_type: return "integer";
+            case real_type: return "real";
+            case null_type: return "null";
+        }
+
+        assert( false );
+
+        return "unknown type";
     }
 }
 

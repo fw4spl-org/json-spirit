@@ -1,7 +1,7 @@
-//          Copyright John W. Wilkinson 2007 - 2011
+//          Copyright John W. Wilkinson 2007 - 2014
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-// json spirit version 4.05
+// json spirit version 4.08
 
 #include "json_spirit_reader_test.h"
 #include "utils_test.h"
@@ -325,7 +325,7 @@ namespace
 
             check_reading( "[\n"
                            "    1,\n"
-                           "    1.2000000000000000,\n"
+                           "    1.2,\n"
                            "    \"john]\",\n"
                            "    true,\n"
                            "    false,\n"
@@ -435,12 +435,12 @@ namespace
             const Array_type arr = value.get_array();
 
             assert_eq( arr.size(), 6 );
-            assert_eq( arr[0].get_real(), 1.200000000000000, 1e-16 );
+            assert_eq( arr[0].get_real(), 1.2, 1e-16 );
             assert_eq( arr[1].get_real(), 1.234567890123456e+125, 1e+110 );
-            assert_eq( arr[2].get_real(), -1.234000000000000e-123, 1e+108 );
-            assert_eq( arr[3].get_real(), 1.000000000000000e-123, 1e+108 );
+            assert_eq( arr[2].get_real(), -1.234e-123, 1e+108 );
+            assert_eq( arr[3].get_real(), 1e-123, 1e+108 );
             assert_eq( arr[4].get_real(), 1234567890.123456, 1e-7 );
-            assert_eq( arr[5].get_real(), 123.0, 1e-13 );
+            assert_eq( arr[5].get_real(), 123, 1e-13 );
         }
 
         void test_from_stream( const char* json_str, bool expected_success,
@@ -771,6 +771,30 @@ namespace
             assert_eq( a[5].is_null(), true );
         }
         
+        void test_comments()
+        {
+            Value_type value_1;
+
+            read_cstr( "{\n"
+                       "    \"name 1\" : \"value 1\",\n"
+                       "    \"name 2\" : \"value 2 /* not a comment but data */\",\n"
+                       "    \"name 3\" : \"value 3 // not a comment but data\"\n"
+                       "}", value_1 );
+
+            Value_type value_2;
+
+            read_cstr( "{// a comment\n "
+                       "    \"name 1\" : /* another comment */ \"value 1\",\n"
+                       "    \"name 2\" : \"value 2 /* not a comment but data */\",\n"
+                       " //   \"name 2\" : \"value 2\",\n"
+                       "    \"name 3\" : \"value 3 // not a comment but data\"\n"
+                       "/* multi\n"
+                       "line\n"
+                       "comment */}", value_2 );
+
+            assert_eq( value_1, value_2 );
+        }
+        
         void run_tests()
         {
             test_syntax();
@@ -783,6 +807,7 @@ namespace
             test_sequence_of_values();
             test_uint64();
             test_types();
+            test_comments();
         }
     };
 
@@ -836,7 +861,6 @@ void json_spirit::test_reader()
 #if defined( JSON_SPIRIT_WMVALUE_ENABLED ) && !defined( BOOST_NO_STD_WSTRING )
     Test_runner< wmConfig >().run_tests();
 #endif
-
 
 #ifndef _DEBUG
     //ifstream ifs( "test.txt" );
