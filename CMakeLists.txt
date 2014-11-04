@@ -1,10 +1,28 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6)
 
-PROJECT(json_spirit)
-SUBDIRS(json_spirit json_demo json_headers_only_demo json_map_demo json_test)
-INCLUDE_DIRECTORIES(json_spirit)
+project(json_spirit)
 
-INSTALL(
+option(BUILD_LIB  "Build json-spirit library" OFF)
+option(BUILD_DEMO "Build json-spirit demo"    OFF)
+option(BUILD_TEST "Build json-spirit test"    OFF)
+
+include_directories(json_spirit)
+
+if(BUILD_LIB)
+    add_subdirectory(json_spirit)
+endif()
+
+if(BUILD_TEST)
+    add_subdirectory(json_test)
+endif()
+
+if(BUILD_DEMO)
+    add_subdirectory(json_demo)
+    add_subdirectory(json_headers_only_demo)
+    add_subdirectory(json_map_demo)
+endif()
+
+install(
   FILES
   ${CMAKE_SOURCE_DIR}/json_spirit/json_spirit.h
   ${CMAKE_SOURCE_DIR}/json_spirit/json_spirit_error_position.h
@@ -15,11 +33,5 @@ INSTALL(
   ${CMAKE_SOURCE_DIR}/json_spirit/json_spirit_value.h
   ${CMAKE_SOURCE_DIR}/json_spirit/json_spirit_writer.h
   ${CMAKE_SOURCE_DIR}/json_spirit/json_spirit_writer_template.h
-  DESTINATION include)
+  DESTINATION include/json_spirit)
 
-INSTALL(
-  FILES
-  ${CMAKE_BINARY_DIR}/json_spirit/libjson_spirit.a
-  DESTINATION lib)
-
-INCLUDE(CPack)
